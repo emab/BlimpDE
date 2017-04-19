@@ -1,0 +1,15 @@
+class Position
+
+instance variables
+
+port : RealPort;
+
+operations
+
+public Position: RealPort ==> Position
+Position(p) == port := p;
+
+public getValue: () ==> real 
+getValue()== return port.getValue();
+
+end Position

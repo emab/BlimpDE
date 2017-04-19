@@ -1,0 +1,33 @@
+--##	EXPORT	61626fe6fa028001401db1e7a1a2da60576bfa0d	SimpleController.fmu	2017-14-04 12:55:41	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
+--##	EXPORT	aa1e89371770d799be7a53148a569b96eb1cf991	SimpleController.fmu	2017-03-04 16:51:47	tool-wrapper	{"name":"fmu-import-export","version":"0.2.2"}
+--##	EXPORT	37f0741d3925109040e4e8b2aca2a1865263fad5	SimpleController.fmu	2017-03-04 16:48:48	tool-wrapper	{"name":"fmu-import-export","version":"0.2.2"}
+--##	EXPORT	4550c5e04de4753fb917b9316663a775e8c357f	SimpleController.fmu	2017-31-03 22:13:59	tool-wrapper	{"name":"fmu-import-export","version":"0.2.2"}
+class HardwareInterface
+
+
+instance variables
+    
+  -- @ interface: type = input, name="posX";
+  public  posX : RealPort := new RealPort(0.0);
+  -- @ interface: type = input, name="posY";
+  public  posY : RealPort := new RealPort(0.0);
+  -- @ interface: type = input, name="posZ";
+  public  posZ : RealPort := new RealPort(0.0);
+    -- @ interface: type = input, name="posTheta";
+  public  posTheta : RealPort := new RealPort(0.0);
+
+ 
+  
+instance variables
+
+  -- @ interface: type = output, name="motorRight";
+  public  motor_right_out : RealPort := new RealPort(0.0);
+  -- @ interface: type = output, name="motorLeft";
+  public  motor_left_out : RealPort := new RealPort(0.0);
+  
+  
+  
+end HardwareInterface
+
+
+  

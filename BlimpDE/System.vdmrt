@@ -1,0 +1,34 @@
+system System
+
+instance variables
+
+  -- Hardware interface variable required by FMU Import/Export
+  public static hwi: HardwareInterface := new HardwareInterface();  
+  
+  public static camController : [CamController] := nil;
+  public static movController : [MovController] := nil;
+
+  cpu : CPU := new CPU(<FP>, 1E6);
+
+operations
+
+public System : () ==> System
+System () == (
+	let motorLeft = new SimpleActuator(hwi.motor_left_out),
+	    motorRight = new SimpleActuator(hwi.motor_right_out)
+	in
+	    movController := new MovController(motorLeft, motorRight);
+	    
+	let posX = new Position(hwi.posX),
+	    posY = new Position(hwi.posY),
+	    posZ = new Position(hwi.posZ),
+	    posTheta = new Position(hwi.posTheta)
+	in
+      camController := new CamController(posX, posY, posZ, posTheta);
+
+	
+	cpu.deploy(camController);
+	cpu.deploy(movController);
+
+);
+end System
