@@ -11,6 +11,11 @@ values
 	yFOV:real = 47;
 	xResolution:int = 640;
 	yResolution:int = 400;
+	
+	calcX:real = 0;
+	calcY:real = 0;
+	calcZ:real = 0;
+	calcTheta:real = 0;
 
 operations
 
@@ -23,6 +28,18 @@ operations
 	  posTheta:= T
   	
   );
+  
+  public getX: () ==> real
+  getX() == return calcX;
+  
+  public getY: () ==> real
+  getY() == return calcY;
+  
+  public getZ: () ==> real
+  getZ() == return calcZ;
+  
+  public getTheta: () ==> real
+  getTheta() == return calcTheta;
 
    private control_loop : () ==> ()
 	control_loop() == cycles(0) (

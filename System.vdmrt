@@ -14,17 +14,19 @@ operations
 
 public System : () ==> System
 System () == (
-	let motorLeft = new SimpleActuator(hwi.motor_left_out),
-	    motorRight = new SimpleActuator(hwi.motor_right_out)
-	in
-	    movController := new MovController(motorLeft, motorRight);
-	    
 	let posX = new Position(hwi.posX),
 	    posY = new Position(hwi.posY),
 	    posZ = new Position(hwi.posZ),
 	    posTheta = new Position(hwi.posTheta)
 	in
       camController := new CamController(posX, posY, posZ, posTheta);
+      
+	let motorLeft = new SimpleActuator(hwi.motor_left_out),
+	    motorRight = new SimpleActuator(hwi.motor_right_out)
+	in
+	    movController := new MovController(motorLeft, motorRight, camController);
+	    
+
 
 	
 	cpu.deploy(camController);

@@ -3,23 +3,24 @@ class MovController
 instance variables
 	motorLeft: SimpleActuator;
 	motorRight: SimpleActuator;
-	
-values
-	
+	camController: CamController;
 
 operations
 
-	public MovController : SimpleActuator * SimpleActuator ==> MovController
-	MovController(motorL, motorR) == 
+	public MovController : SimpleActuator * SimpleActuator * CamController ==> MovController
+	MovController(motorL, motorR, camC) == 
 	(
 	  motorLeft:= motorL; 
  		motorRight:= motorR;
+ 		camController:= camC;
   );
 
   private control_loop : () ==> ()
 	control_loop() == cycles(0) (
-		motorLeft.setValue(1);
-		motorRight.setValue(1);
+		if (camController.getX() > 0) then
+		(
+			motorLeft.setValue(1);
+		);
   );
 
 thread

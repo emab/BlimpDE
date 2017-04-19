@@ -10,6 +10,6 @@ public Position: RealPort ==> Position
 Position(p) == port := p;
 
 public getValue: () ==> real 
-getValue()== return port.getValue();
+getValue() == return port.getValue();
 
 end Position
