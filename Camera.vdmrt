@@ -1,0 +1,70 @@
+class Camera
+
+instance variables
+	posX: Position;
+	posY: Position;
+	posZ: Position;
+	posTheta: Position;
+
+values
+	xFOV:real = 75;
+	yFOV:real = 47;
+	xResolution:int = 640;
+	yResolution:int = 400;
+
+types
+	ObjectID = token;
+	ObjectDatum ::	xCoord : real
+									yCoord : real
+									radius : real;
+	Objects = map ObjectID to ObjectDatum;
+	
+operations
+	public Camera : Position * Position * Position * Position ==> Camera
+	Camera(X, Y, Z, T) == 
+	(
+	  posX:= X;
+	  posY:= Y;
+	  posZ:= Z;
+	  posTheta:= T;
+	  Process();
+  );
+  
+  public Process : () ==> ()
+  Process() ==
+  (
+  	dcl xMax:real:= posZ.getValue() * MATH`tan((180*xFOV)/(2*MATH`pi));
+  	dcl yMax:real:= posZ.getValue() * MATH`tan((180*yFOV)/(2*MATH`pi));
+  	
+  	dcl pixelOriginX:real:= -xMax;
+  	dcl pixelOriginY:real:= -yMax;
+  	
+  	dcl avgXPixelVal:real:= xResolution/(2*xMax);
+  	dcl avgYPixelVal:real:= yResolution/(2*yMax);
+  	
+  	   		IO`println("1")
+  	
+  );
+  
+  op : () ==> ()
+	op () == 
+	let count = CSV`flinecount("res/environment.csv").#2
+	in 
+ 		for i = 1 to count
+  do
+   	let mk_(ok,xs) = CSV`freadval[seq of ?]("res/environment.csv",i)
+    	in
+   	 	(
+     	for x in xs do IO`printf("| %s | ",[x]);
+     	if not ok then
+      	IO`printf("ERR: %s", [CSV`ferror()]);
+     		IO`println("\n");
+    	);
+	
+	public getxFOV : () ==> real
+	getxFOV() == return xFOV;
+	
+	public getxResolution : () ==> real
+	getxResolution() == return xResolution;
+	
+end Camera
