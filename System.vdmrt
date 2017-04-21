@@ -5,8 +5,9 @@ instance variables
   -- Hardware interface variable required by FMU Import/Export
   public static hwi: HardwareInterface := new HardwareInterface();  
   
-  public static camController : [CamController] := nil;
+  public static camera : [Camera] := nil;
   public static movController : [MovController] := nil;
+  public static camController : [CamController] := nil;
 
   cpu : CPU := new CPU(<FP>, 1E6);
 
@@ -19,12 +20,14 @@ System () == (
 	    posZ = new Position(hwi.posZ),
 	    posTheta = new Position(hwi.posTheta)
 	in
-      camController := new CamController(posX, posY, posZ, posTheta);
+      camera := new Camera(posX, posY, posZ, posTheta);
       
 	let motorLeft = new SimpleActuator(hwi.motor_left_out),
 	    motorRight = new SimpleActuator(hwi.motor_right_out)
 	in
-	    movController := new MovController(motorLeft, motorRight, camController);
+	    movController := new MovController(motorLeft, motorRight);
+	    
+	    camController := new CamController(camera, movController);
 	    
 
 

@@ -1,7 +1,9 @@
---##	EXPORT	61626fe6fa028001401db1e7a1a2da60576bfa0d	SimpleController.fmu	2017-14-04 12:55:41	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
---##	EXPORT	aa1e89371770d799be7a53148a569b96eb1cf991	SimpleController.fmu	2017-03-04 16:51:47	tool-wrapper	{"name":"fmu-import-export","version":"0.2.2"}
---##	EXPORT	37f0741d3925109040e4e8b2aca2a1865263fad5	SimpleController.fmu	2017-03-04 16:48:48	tool-wrapper	{"name":"fmu-import-export","version":"0.2.2"}
---##	EXPORT	4550c5e04de4753fb917b9316663a775e8c357f	SimpleController.fmu	2017-31-03 22:13:59	tool-wrapper	{"name":"fmu-import-export","version":"0.2.2"}
+--##	EXPORT	36c3d1000779e818925f6e5f92eb49aaf9fa4bb8	BlimpDE.fmu	2017-21-04 17:21:37	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
+--##	EXPORT	605e09e75c46106c71517992a1eead1562a7d7f3	BlimpDE.fmu	2017-21-04 17:19:16	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
+--##	EXPORT	35f343e91cb7f3aff3fb1f81ad39c8826a32923f	BlimpDE.fmu	2017-21-04 17:18:05	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
+--##	EXPORT	27264b56cfcaff03f8a2155a8722df3afda03ec9	BlimpDE.fmu	2017-21-04 17:11:24	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
+--##	EXPORT	2cd1f6dc8ab12f4c020615e2f54d21662be72e8b	BlimpDE.fmu	2017-21-04 11:38:59	tool-wrapper	{"name":"fmu-import-export","version":"0.2.0"}
+
 class HardwareInterface
 
 
@@ -24,6 +26,7 @@ instance variables
   public  motor_right_out : RealPort := new RealPort(0.0);
   -- @ interface: type = output, name="motorLeft";
   public  motor_left_out : RealPort := new RealPort(0.0);
+  
   
   
   
