@@ -6,14 +6,22 @@ movController: MovController;
 	
 types
 	ObjectID = token;
-	ObjectDatum ::	xCoord : real
+	ObjectInfo ::	xCoord : real
 									yCoord : real
 									radius : real;
-	Objects = map ObjectID to ObjectDatum;
+	RealObjects = map ObjectID to ObjectInfo;
+	
+	ObjectDatum ::	xPixel : real
+									yPixel : real
+									width : real;
+	CamObjects = map ObjectID to ObjectDatum;
 	
 	Coord :: X : real
 					 Y : real
 					 Z : real;
+					 
+	Coord2 :: X : real
+						Y : real;
 	
 	Lengths :: l1: real
 						 l2: real
@@ -46,7 +54,7 @@ operations
    private GetDistance : real * int * Camera ==> real
    GetDistance(objR, pixelWidth, cam) ==
    (
-   	return objR / MATH`tan((((c.getxFOV()*180/MATH`pi)*pixelWidth)/cam.getxResolution())/2);
+   	return objR / MATH`tan((((cam.getxFOV()*180/MATH`pi)*pixelWidth)/cam.getxResolution())/2);
    );
    
    private Trilaterate : Coord * Coord * Coord * Lengths ==> Coord
@@ -105,7 +113,82 @@ operations
       
       return mk_Coord((x1 + X * Xx + Y * Yx + Z * Zx),(y1 + X * Xy + Y * Yy + Z * Zy),(z1 + X * Xz + Y * Yz + Z * Zz));
    );
-
+   
+   private CalcAngle : CamObjects * RealObjects * Camera * Coord ==> real
+   CalcAngle(camObj, realObj, cam, coords) ==
+   (
+   	dcl resX:real:= cam.getxResolution();
+   	dcl resY:real:= cam.getyResolution();
+   	dcl xFOV:real:= cam.getxFOV();
+   	dcl yFOV:real:= cam.getyFOV();
+   	dcl xCam:real:= coords.X;
+   	dcl yCam:real:= coords.Y;
+   	dcl zCam:real:= coords.Z;
+   	
+   	dcl xMax:real:= zCam * MATH`tan((xFOV/2)*(180/MATH`pi));
+		dcl yMax:real:= zCam * MATH`tan((yFOV/2)*(180/MATH`pi));  	
+   	
+   	dcl pixelOriginX:real:= -xMax;
+   	dcl pixelOriginY:real:= -yMax;
+   	
+   	dcl avgXPixelVal:real:= resX/(2*xMax);
+   	dcl avgYPixelVal:real:= resY/(2*yMax);
+   	
+   	for ID in set dom CamObjects do (
+   		for ID in set dom RealObjects do (
+   		);
+   		);
+   		
+   	
+   	dcl obj1:Coord2:= Translate(xCam, yCam, realObj.("1").xCoord, o1r.yCoord);
+   	dcl obj2:Coord2:= Translate(xCam, yCam, o2r.xCoord, o2r.yCoord);   	
+   	dcl obj3:Coord2:= Translate(xCam, yCam, o3r.xCoord, o3r.yCoord);
+   	
+   	dcl obj1x:int:= floor ((obj1.X - pixelOriginX) * avgXPixelVal);
+   	dcl obj1y:int:= floor ((obj1.Y - pixelOriginY) * avgYPixelVal);  
+    dcl obj2x:int:= floor ((obj2.X - pixelOriginX) * avgXPixelVal);  
+   	dcl obj2y:int:= floor ((obj2.Y - pixelOriginY) * avgYPixelVal);  
+   	dcl obj3x:int:= floor ((obj3.X - pixelOriginX) * avgXPixelVal);  
+   	dcl obj3y:int:= floor ((obj3.Y - pixelOriginY) * avgYPixelVal);     	
+   	
+   	dcl calcangle1:real:= angleChange(obj1x, obj1y, o1.xPixel, o1.yPixel, resX/2, resY/2);
+   	dcl calcangle2:real:= angleChange(obj1x, obj1y, o2.xPixel, o2.yPixel, resX/2, resY/2);
+   	dcl calcangle3:real:= angleChange(obj1x, obj1y, o3.xPixel, o3.yPixel, resX/2, resY/2);
+		
+		return abs ((calcangle1 + calcangle2+ calcangle3)/2);   
+   
+   );
+   
+   private Translate : real * real * real * real ==> Coord2
+   Translate(xCam, yCam, x, y) ==
+   (
+   	dcl adjX:real;
+   	dcl adjY:real;
+   	dcl translated:Coord2;
+   	
+   	if ((xCam > 0 and yCam > 0) or (xCam > 0 and yCam < 0) or (xCam > 0 and yCam = 0) or (xCam = 0 and yCam > 0)) then
+			(
+				adjX:= x - xCam;
+				adjY:= y - yCam;
+   		) else if ((xCam < 0 and yCam < 0) or (xCam = 0 and yCam < 0)) then
+   		(
+				adjX:= x - xCam;
+				adjY:= y + yCam;	
+   		) else if (xCam < 0 and yCam >= 0) then
+   		(
+   			adjX:= x + xCam;
+				adjY:= y + yCam;
+			) else if (xCam = 0 and yCam = 0) then
+			(
+				adjX:= x;
+				adjY:= y;
+			);
+		
+		translated:= mk_Coord2(adjX, adjY);
+		
+   	return translated;
+   );
+   
 thread
 
 	periodic(10E6,0,0,0)(control_loop);	 

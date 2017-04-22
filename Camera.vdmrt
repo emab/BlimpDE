@@ -64,7 +64,13 @@ operations
 	public getxFOV : () ==> real
 	getxFOV() == return xFOV;
 	
+	public getyFOV : () ==> real
+	getyFOV() == return yFOV;
+	
 	public getxResolution : () ==> real
 	getxResolution() == return xResolution;
+	
+	public getyResolution : () ==> real
+	getyResolution() == return yResolution;
 	
 end Camera
