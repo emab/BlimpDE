@@ -4,7 +4,6 @@ operations
 
 public run : () ==> ()
 run() == (
-	start(System`camController);
 	start(System`movController);
 	block();
 );
