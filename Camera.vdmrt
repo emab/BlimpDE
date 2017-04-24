@@ -5,6 +5,7 @@ instance variables
 	posY: Position;
 	posZ: Position;
 	posTheta: Position;
+	realObjects: RealObjects;
 
 values
 	xFOV:real = 75;
@@ -13,11 +14,16 @@ values
 	yResolution:int = 400;
 
 types
-	ObjectID = token;
-	ObjectDatum ::	xCoord : real
-									yCoord : real
-									radius : real;
-	Objects = map ObjectID to ObjectDatum;
+	ObjectID = nat;
+	ObjectInfo :: xCoord : real
+								yCoord : real
+								radius : real;
+	RealObjects = map ObjectID to ObjectInfo;
+	
+	public ProcessedInfo :: xPixel : nat
+									 yPixel : nat
+									 width : nat;
+	public ProcessedObjects = map ObjectID to ProcessedInfo;
 	
 operations
 	public Camera : Position * Position * Position * Position ==> Camera
@@ -27,39 +33,139 @@ operations
 	  posY:= Y;
 	  posZ:= Z;
 	  posTheta:= T;
-	  Process();
+	  realObjects:= readCSV("environment.csv");
   );
   
-  public Process : () ==> ()
-  Process() ==
+  public processImage : () ==> ProcessedObjects
+  processImage() ==
   (
-  	dcl xMax:real:= posZ.getValue() * MATH`tan((180*xFOV)/(2*MATH`pi));
-  	dcl yMax:real:= posZ.getValue() * MATH`tan((180*yFOV)/(2*MATH`pi));
+  	dcl processedObj:ProcessedObjects:= {|->};
   	
-  	dcl pixelOriginX:real:= -xMax;
-  	dcl pixelOriginY:real:= -yMax;
+  	dcl camX:real:= posX.getValue();
+  	dcl camY:real:= posY.getValue();
+  	dcl camZ:real:= posZ.getValue();
+  	dcl camT:real:= posTheta.getValue() mod 2*MATH`pi;
+  	
+  	dcl xMax:real:= camZ * MATH`tan((180*xFOV)/(2*MATH`pi));
+  	dcl yMax:real:= camZ * MATH`tan((180*yFOV)/(2*MATH`pi));
+  	
+  	--dcl pixelOriginX:real:= -xMax;
+  	--dcl pixelOriginY:real:= -yMax;
   	
   	dcl avgXPixelVal:real:= xResolution/(2*xMax);
   	dcl avgYPixelVal:real:= yResolution/(2*yMax);
   	
-  	   		IO`println("1")
+  	dcl numOfObjects:nat:= card (dom realObjects);
   	
+  	for i = 1 to numOfObjects do
+  		if isVisible(camX, camY, camZ, camT, realObjects(i).xCoord, realObjects(i).yCoord) then (
+  			processedObj:= {i |-> processObject(i, camX, camY, camZ, camT, xMax, yMax, avgXPixelVal, avgYPixelVal)};
+  		);
+  	return processedObj;
   );
   
-  op : () ==> ()
-	op () == 
-	let count = CSV`flinecount("res/environment.csv").#2
-	in 
- 		for i = 1 to count
-  do
-   	let mk_(ok,xs) = CSV`freadval[seq of ?]("res/environment.csv",i)
-    	in
-   	 	(
-     	for x in xs do IO`printf("| %s | ",[x]);
-     	if not ok then
-      	IO`printf("ERR: %s", [CSV`ferror()]);
-     		IO`println("\n");
-    	);
+	private processObject : nat * real * real * real * real * real * real * real * real ==> ProcessedInfo
+	processObject(id, camX, camY, camZ, camT, xMax, yMax, avgXPixelVal, avgYPixelVal) ==
+	(
+		dcl objX:real:= realObjects(id).xCoord;
+		dcl objY:real:= realObjects(id).yCoord;
+		dcl objR:real:= realObjects(id).radius;
+		
+		dcl adjX:real;
+		dcl adjY:real;
+		dcl rotatedAdjX:real;
+		dcl rotatedAdjY:real;
+		
+		dcl distance:real;
+		dcl objArc: real;
+		dcl pixelWidth: real;
+		dcl xCentre: nat;
+		dcl yCentre: nat;
+		
+		if ((camX > 0 and camY > 0) or (camX > 0 and camY < 0) or (camX > 0 and camY = 0) or (camX = 0 and camY > 0)) then
+		(
+			adjX:= objX - camX;
+			adjY:= objY - camY; 
+		) else if ((camX < 0 and camY < 0) or (camX = 0 and camY < 0)) then
+		(
+			adjX:= objX - camX;
+			adjY:= objY + camY;
+		) else if (camX < 0 and camY >=0) then
+		(
+			adjX:= objX + camX;
+			adjY:= objY + camY;
+		) else if (camX = 0 and camY = 0) then
+		(
+			adjX:= objX;
+			adjY:= objY;
+		);
+		
+		rotatedAdjX:= adjX * MATH`cos((-camT)*(MATH`pi/180)) - adjY * MATH`sin((-camT)*(MATH`pi/180));
+		rotatedAdjY:= adjX * MATH`sin((-camT)*(MATH`pi/180)) - adjY * MATH`cos((-camT)*(MATH`pi/180));
+		
+		distance:= MATH`sqrt((camX - objX)*(camX - objX) + (camY - objY)*(camY - objY) + (camZ * camZ));
+		objArc:= 2 * MATH`atan(objR / distance);
+		pixelWidth:= floor ((objArc / xFOV) * xResolution);
+		xCentre:= floor ((rotatedAdjX - xMax) * avgXPixelVal);
+		yCentre:= floor ((rotatedAdjY - yMax) * avgYPixelVal);
+			
+		return mk_ProcessedInfo(xCentre, yCentre, pixelWidth);
+	);
+  
+  private isVisible : real * real * real * real * real * real ==> bool
+  isVisible(camX, camY, camZ, camT, objX, objY) ==
+  (
+    dcl xMax:real:= camZ * MATH`tan((180*xFOV)/(2*MATH`pi));
+  	dcl yMax:real:= camZ * MATH`tan((180*yFOV)/(2*MATH`pi));
+  	dcl adjX:real;
+		dcl adjY:real;
+		dcl rotatedAdjX:real;
+		dcl rotatedAdjY:real;
+  
+  	if ((camX > 0 and camY > 0) or (camX > 0 and camY < 0) or (camX > 0 and camY = 0) or (camX = 0 and camY > 0)) then
+		(
+			adjX:= objX - camX;
+			adjY:= objY - camY; 
+		) else if ((camX < 0 and camY < 0) or (camX = 0 and camY < 0)) then
+		(
+			adjX:= objX - camX;
+			adjY:= objY + camY;
+		) else if (camX < 0 and camY >=0) then
+		(
+			adjX:= objX + camX;
+			adjY:= objY + camY;
+		) else if (camX = 0 and camY = 0) then
+		(
+			adjX:= objX;
+			adjY:= objY;
+		);
+
+		rotatedAdjX:= adjX * MATH`cos((-camT)*(MATH`pi/180)) - adjY * MATH`sin((-camT)*(MATH`pi/180));
+		rotatedAdjY:= adjX * MATH`sin((-camT)*(MATH`pi/180)) - adjY * MATH`cos((-camT)*(MATH`pi/180));
+		
+		if ((xMax > abs rotatedAdjX) and (yMax > abs rotatedAdjY)) then
+		(
+			return true
+		) else 
+		( 
+			return false
+		);
+  );
+  
+  private readCSV : seq1 of char ==> RealObjects
+  readCSV(file) ==
+  (
+  let mk_(ok, lines) = CSV`flinecount(file)
+  in
+  	if ok then (
+  		dcl objects : map ObjectID to ObjectInfo := {|->};
+  		for i = 1 to lines do
+  			let mk_(ok, [objectid, xcoord, ycoord, radius]) = CSV`freadval[seq of real](file,i)
+  			in objects(objectid) := mk_ObjectInfo(xcoord, ycoord, radius);
+  			return objects;
+  			)
+  			else error;
+  ); 
 	
 	public getxFOV : () ==> real
 	getxFOV() == return xFOV;
