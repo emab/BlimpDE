@@ -3,6 +3,7 @@ class MovController
 instance variables
 	motorLeft: SimpleActuator;
 	motorRight: SimpleActuator;
+	camController: CamController;
 	calcX:real:= 0;
 	calcY:real:= 0;
 	calcZ:real:= 0;
@@ -13,11 +14,12 @@ values
 
 operations
 
-	public MovController : SimpleActuator * SimpleActuator ==> MovController
-	MovController(motorL, motorR) == 
+	public MovController : SimpleActuator * SimpleActuator * CamController ==> MovController
+	MovController(motorL, motorR, camCont) == 
 	(
 	  motorLeft:= motorL; 
  		motorRight:= motorR;
+ 		camController:= camCont;
   );
   
   public setCalcX : real ==> ()
