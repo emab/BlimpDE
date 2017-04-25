@@ -1,0 +1,47 @@
+class Camera
+
+instance variables
+	posX: Position;
+	posY: Position;
+	posZ: Position;
+	posTheta: Position;
+
+values
+	xFOV:real = 75;
+	yFOV:real = 47;
+	xResolution:int = 640;
+	yResolution:int = 400;
+
+types
+	ObjectID = token;
+	ObjectDatum ::	xCoord : real
+									yCoord : real
+									radius : real;
+	Objects = map ObjectID to ObjectDatum;
+	
+operations
+	public Camera : Position * Position * Position * Position ==> Camera
+	Camera(X, Y, Z, T) == 
+	(
+	  posX:= X;
+	  posY:= Y;
+	  posZ:= Z;
+	  posTheta:= T
+  );
+  
+  op : () ==> ()
+	op () == 
+	let count = CSV`flinecount("res/environment.csv").#2
+	in 
+ 		for i = 1 to count
+  do
+   	let mk_(ok,xs) = CSV`freadval[seq of ?]("res/environment.csv",i)
+    	in
+   	 	(
+     	for x in xs do IO`printf("| %s | ",[x]);
+     	if not ok then
+      	IO`printf("ERR: %s", [CSV`ferror()]);
+     		IO`println("\n");
+    	)
+
+end Camera

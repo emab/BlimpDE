@@ -1,0 +1,19 @@
+class SimpleActuator
+
+
+instance variables
+
+port : RealPort;
+
+operations
+
+public SimpleActuator: RealPort ==> SimpleActuator
+SimpleActuator(p) == port := p;
+
+public setValue: real ==> ()
+setValue(value) == port.setValue(value);
+
+public getValue: () ==> real
+getValue()== return port.getValue();
+
+end SimpleActuator
