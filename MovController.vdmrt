@@ -4,11 +4,9 @@ instance variables
 	motorLeft: SimpleActuator;
 	motorRight: SimpleActuator;
 	camController: CamController;
-	calcX:real:= 0;
-	calcY:real:= 0;
-	calcZ:real:= 0;
-	calcT:real:= 0;
-	
+	calcX: Position;
+	calcY: Position;
+
 values
 	targetY:real = 2;
 
@@ -21,22 +19,21 @@ operations
  		motorRight:= motorR;
  		camController:= camCont;
   );
-  
-  public setCalcX : real ==> ()
-  setCalcX(x) == calcX:= x;
-  
-  public setCalcY : real ==> ()
-  setCalcY(y) == calcY:= y;
-  
-  public setCalcZ : real ==> ()
-  setCalcZ(z) == calcZ:= z;
-
-  public setCalcT : real ==> ()
-  setCalcT(t) == calcT:= t;
 	
   private control_loop : () ==> ()
 	control_loop() == cycles(0) (
-		MoveY(targetY);
+		dcl pos:CamController`EstimatedPos:= camController.process();
+		dcl coords:CamController`Coord:=pos.Coord;
+		dcl theta:real:=pos.T;
+		
+		if (-0.1 < coords.X and coords.X < 0.1) then
+		(
+			MoveY(10);
+		)
+		else
+		(
+			skip;
+		);
   );
 	
 	public MoveY: real ==> ()
