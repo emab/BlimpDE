@@ -22,12 +22,14 @@ System () == (
 	in
       camera := new Camera(posX, posY, posZ, posTheta);
       
+     	camController := new CamController(camera);
+      
   let motorLeft = new SimpleActuator(hwi.motor_left_out),
 	    motorRight = new SimpleActuator(hwi.motor_right_out)
 	in
 			movController := new MovController(motorLeft, motorRight, camController);
 			
-      camController := new CamController(camera);
+
 
 	    
 	cpu.deploy(movController);
