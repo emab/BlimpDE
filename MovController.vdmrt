@@ -4,8 +4,6 @@ instance variables
 	motorLeft: SimpleActuator;
 	motorRight: SimpleActuator;
 	camController: CamController;
-	calcX: Position;
-	calcY: Position;
 
 values
 	targetY:real = 2;
@@ -25,36 +23,15 @@ operations
 		dcl pos:CamController`EstimatedPos:= camController.process();
 		dcl coords:CamController`Coord:=pos.Coord;
 		dcl theta:real:=pos.T;
-		
-		if (-0.1 < coords.X and coords.X < 0.1) then
+		IO`println(coords.X);
+				IO`println(coords.Y);
+		if (-0.2 < coords.Y and coords.Y < 0.2) then
 		(
-			MoveY(10);
-		)
-		else
-		(
-			skip;
+			motorLeft.setValue(1);
+			motorRight.setValue(1);
 		);
-  );
-	
-	public MoveY: real ==> ()
-	MoveY(y) == (
-	dcl move:real;
-	move:=targetY;
-				IO`println("test1");
-		if (move < 0.2 and move > 0) then (
 
-			motorLeft.setValue(-0.0026);
-			motorRight.setValue(-0.0026);
-		)
-		else if (move <= y/1.3) then (
-			motorLeft.setValue(0);
-			motorRight.setValue(0);
-		)
-		else (
-			motorLeft.setValue(0.01);
-			motorRight.setValue(0.01);
-		);
-	);
+  );
 	
 thread
 

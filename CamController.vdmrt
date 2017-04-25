@@ -47,6 +47,25 @@ operations
   	camera:= c;
   	realObjects:= readCSV("environment.csv");
   );
+  
+  public test : () ==> bool
+  test() ==
+  (
+  	if (card (dom realObjects) > 0) then
+  		return true
+  	else
+  		return false;
+  );
+  
+  public test2 : () ==> bool
+  test2() ==
+  (
+  	dcl testObj:Camera`ProcessedObjects:= camera.processImage();
+  	if (card (dom testObj) = 0) then
+  		return true
+  	else
+  		return false;
+  );
    
   public process : () ==> EstimatedPos
   process() ==

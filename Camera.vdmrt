@@ -10,8 +10,8 @@ instance variables
 values
 	xFOV:real = 75;
 	yFOV:real = 47;
-	xResolution:int = 640;
-	yResolution:int = 400;
+	xResolution:real = 640;
+	yResolution:real = 400;
 
 types
 	ObjectID = nat;
@@ -40,23 +40,21 @@ operations
   processImage() ==
   (
   	dcl processedObj:ProcessedObjects:= {|->};
-  	
   	dcl camX:real:= posX.getValue();
   	dcl camY:real:= posY.getValue();
-  	dcl camZ:real:= posZ.getValue();
+  	dcl camZ:real:= 20;
   	dcl camT:real:= posTheta.getValue() mod 2*MATH`pi;
   	
   	dcl xMax:real:= camZ * MATH`tan((180*xFOV)/(2*MATH`pi));
   	dcl yMax:real:= camZ * MATH`tan((180*yFOV)/(2*MATH`pi));
   	
-  	--dcl pixelOriginX:real:= -xMax;
-  	--dcl pixelOriginY:real:= -yMax;
-  	
-  	dcl avgXPixelVal:real:= xResolution/(2*xMax);
-  	dcl avgYPixelVal:real:= yResolution/(2*yMax);
+  	dcl avgXPixelVal:real:= (xResolution)/(2*xMax);
+  	dcl avgYPixelVal:real:= (yResolution)/(2*yMax);
   	
   	dcl numOfObjects:nat:= card (dom realObjects);
-  	
+  	IO`println("real objects:");
+  	IO`println(numOfObjects);
+  	IO`println(processedObj);
   	for i = 1 to numOfObjects do
   		if isVisible(camX, camY, camZ, camT, realObjects(i).xCoord, realObjects(i).yCoord) then (
   			processedObj:= {i |-> processObject(i, camX, camY, camZ, camT, xMax, yMax, avgXPixelVal, avgYPixelVal)};
