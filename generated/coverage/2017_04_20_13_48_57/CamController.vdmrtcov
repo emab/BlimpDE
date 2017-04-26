@@ -1,0 +1,42 @@
+class CamController
+
+instance variables
+camera: Camera;
+movController: MovController;
+	
+types
+	ObjectID = token;
+	ObjectDatum ::	xCoord : real
+									yCoord : real
+									radius : real;
+	Objects = map ObjectID to ObjectDatum;
+
+values
+	calcX = 0;
+	calcY = 0;
+	calcZ = 0;
+	calcTheta = 0;						
+
+operations
+
+	public CamController : Camera * MovController ==> CamController
+	CamController(c, mov) == 
+	(
+  	camera:= c;
+  	movController:= mov;
+  );
+
+   private control_loop : () ==> ()
+	control_loop() == cycles(0) (
+		
+		if (calcX = 0) then
+		(
+			return;
+		);
+   );
+
+thread
+
+	periodic(10E6,0,0,0)(control_loop);	 
+		 
+end CamController

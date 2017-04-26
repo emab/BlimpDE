@@ -1,0 +1,16 @@
+class World
+
+operations
+
+public run : () ==> ()
+run() == (
+	start(System`camController);
+	start(System`movController);
+	block();
+);
+
+private block : () ==>()
+block() ==  skip;
+
+sync per block => false;
+end World

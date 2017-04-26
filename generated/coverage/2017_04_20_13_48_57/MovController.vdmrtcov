@@ -1,0 +1,62 @@
+class MovController
+
+instance variables
+	motorLeft: SimpleActuator;
+	motorRight: SimpleActuator;
+	calcX:real:= 0;
+	calcY:real:= 0;
+	calcZ:real:= 0;
+	calcT:real:= 0;
+	
+values
+	targetY:real = 2;
+
+operations
+
+	public MovController : SimpleActuator * SimpleActuator ==> MovController
+	MovController(motorL, motorR) == 
+	(
+	  motorLeft:= motorL; 
+ 		motorRight:= motorR;
+  );
+  
+  public setCalcX : real ==> ()
+  setCalcX(x) == calcX:= x;
+  
+  public setCalcY : real ==> ()
+  setCalcY(y) == calcY:= y;
+  
+  public setCalcZ : real ==> ()
+  setCalcZ(z) == calcZ:= z;
+
+  public setCalcT : real ==> ()
+  setCalcT(t) == calcT:= t;
+	
+  private control_loop : () ==> ()
+	control_loop() == cycles(0) (
+		MoveY(targetY);
+  );
+	
+	public MoveY: real ==> ()
+	MoveY(y) == (
+	dcl move:real;
+	move:=targetY;
+		if (move < 0.2 and move > 0) then (
+			motorLeft.setValue(-0.0026);
+			motorRight.setValue(-0.0026);
+		)
+		else if (move <= y/1.3) then (
+			motorLeft.setValue(0);
+			motorRight.setValue(0);
+		)
+		else (
+			motorLeft.setValue(0.01);
+			motorRight.setValue(0.01);
+		);
+	);
+	
+thread
+
+	periodic(10E6,0,0,0)(control_loop);	 
+		 
+end MovController

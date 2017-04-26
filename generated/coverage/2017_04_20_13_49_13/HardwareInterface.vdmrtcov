@@ -1,0 +1,31 @@
+
+class HardwareInterface
+
+
+instance variables
+    
+  -- @ interface: type = input, name="posX";
+  public  posX : RealPort := new RealPort(0.0);
+  -- @ interface: type = input, name="posY";
+  public  posY : RealPort := new RealPort(0.0);
+  -- @ interface: type = input, name="posZ";
+  public  posZ : RealPort := new RealPort(0.0);
+    -- @ interface: type = input, name="posTheta";
+  public  posTheta : RealPort := new RealPort(0.0);
+
+ 
+  
+instance variables
+
+  -- @ interface: type = output, name="motorRight";
+  public  motor_right_out : RealPort := new RealPort(0.0);
+  -- @ interface: type = output, name="motorLeft";
+  public  motor_left_out : RealPort := new RealPort(0.0);
+  
+  
+  
+  
+end HardwareInterface
+
+
+  
