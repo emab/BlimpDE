@@ -72,7 +72,6 @@ operations
   (
   	dcl processedObjects:Camera`ProcessedObjects:= camera.processImage();
   	dcl calcObjects:Objects;
-  	IO`println("-----------------------FINISHED PROCESSING OBJECTS");
   	if (card(dom  processedObjects) < 3) then
   	(
   		return mk_EstimatedPos(mk_Coord(999,999,999), 9999)
@@ -131,8 +130,10 @@ operations
   
   private getDistance : real * real * Camera ==> real
   getDistance(objR, pixelWidth, cam) ==
-  (
-	 	return objR / MATH`tan((((cam.getxFOV()*MATH`pi/180)*pixelWidth)/cam.getxResolution())/2);
+  (	
+  	dcl ratio:real:= (cam.getxFOV() * pixelWidth) /cam.getxResolution();
+  	dcl dist:real:= objR / MATH`tan((ratio * (MATH`pi/180))/2);
+	 	return dist;
   );
    
   private trilaterate : Coord * Coord * Coord * Lengths ==> Coord
@@ -164,7 +165,8 @@ operations
 		dcl CB:real:= MATH`sqrt(LB3*LB3 - XB* XB );
 		dcl D1:real:= MATH`sqrt(C1*C1+(XB - X)*(XB - X));
 		dcl Y:real:= (D1*D1 - L3*L3  + CB*CB  )/(2*CB );
-		dcl Z:real:= MATH`sqrt(C1 * C1 - Y * Y);
+		dcl Za:real:= (C1*C1)-(Y*Y);
+		dcl Z:real:= MATH`sqrt(Za);
 		
 		dcl Xx:real:= (x2-x1);
 		dcl Xy:real:= (y2-y1);
@@ -175,21 +177,25 @@ operations
 		dcl Yx:real:= (x1+(x2-x1)*t-x3);
 	  dcl Yy:real:= (y1+(y2-y1)*t-y3);
 	  dcl Yz:real:= (z1+(z2-z1)*t-z3);
-	  dcl Yl:real:= MATH`sqrt(Yx*Yx+Yy*Yy+Yz*Yz);
+	  dcl Yl:real:= MATH`sqrt(Yx*Yx+Yy*Yy+Yz*Yz);  
 	    
-	  dcl Zx:real:= (Xy * Yz - Xz * Yy);
-	  dcl Zy:real:= (Xz * Yx - Xx * Yz);
-	  dcl Zz:real:= (Xx * Yy - Xy * Yx);  
+	  dcl Zx:real;
+	  dcl Zy:real;
+	  dcl Zz:real;
 	    
 		Xx:= Xx / Xl;
 		Xy:= Xy / Xl;
 		Xz:= Xz / Xl;
 		
-		Yx:= - (Yx/Yl);
-	  Yy:= - (Yy/Yl);
-	  Yz:= - (Yz/Yl);
-      
-    return mk_Coord((x1 + X * Xx + Y * Yx + Z * Zx),(y1 + X * Xy + Y * Yy + Z * Zy),(z1 + X * Xz + Y * Yz + Z * Zz));
+		Yx:= -(Yx/Yl);
+		Yy:= -(Yy/Yl);
+		Yz:= -(Yz/Yl);
+		
+		Zx:= (Xy * Yz - Xz * Yy);
+		Zy:= (Xz * Yx - Xx * Yz);
+		Zz:= (Xx * Yy - Xy * Yx); 
+    
+    return mk_Coord((x1 + X * Xx + Y * Yx + Z * Zx),(y1 + X * Xy + Y * Yy + Z * Zy),abs (z1 + X * Xz + Y * Yz + Z * Zz));
 	);
    
   private calcAngle : Objects * Camera * Coord ==> real
@@ -203,8 +209,8 @@ operations
 		dcl yCam:real:= coords.Y;
 		dcl zCam:real:= coords.Z;
 		
-		dcl xMax:real:= zCam * MATH`tan((xFOV/2)*(180/MATH`pi));
-		dcl yMax:real:= zCam * MATH`tan((yFOV/2)*(180/MATH`pi));  	
+		dcl xMax:real:= zCam * MATH`tan((xFOV/2)*(MATH`pi/180));
+		dcl yMax:real:= zCam * MATH`tan((yFOV/2)*(MATH`pi/180));  	
 		
 		dcl avgXPixelVal:real:= resX/(2*xMax);
 		dcl avgYPixelVal:real:= resY/(2*yMax);
@@ -223,6 +229,8 @@ operations
   	dcl calcangle1:real:= angleChange(obj1x, obj1y, objects(1).xPixel, objects(1).yPixel, resX/2, resY/2);
   	dcl calcangle2:real:= angleChange(obj2x, obj2y, objects(2).xPixel, objects(2).yPixel, resX/2, resY/2);
   	dcl calcangle3:real:= angleChange(obj3x, obj3y, objects(3).xPixel, objects(3).yPixel, resX/2, resY/2);
+		
+		IO`printf("ANGLES::::::::::::: %s %s %s",[calcangle1,calcangle2,calcangle3]);
 		
   	return (calcangle1 + calcangle2 + calcangle3)/3;	
  	);

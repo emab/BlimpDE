@@ -23,13 +23,13 @@ operations
 		dcl pos:CamController`EstimatedPos:= camController.process();
 		dcl coords:CamController`Coord:=pos.Coord;
 		dcl theta:real:=pos.T;
-		IO`printf("@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@ ESTIMATED COORDS   X: %s    Y: %S    Z: %s     theta: %s \n",[coords.X,coords.Y,coords.Z,theta]);
+		IO`printf("\n\n\n\n@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@_@ ESTIMATED POSITION   X: %s    Y: %S    Z: %s     theta: %s \n\n\n\n",[coords.X,coords.Y,coords.Z,theta]);
 		if (coords.Y <= 0) then
 		(
 			motorLeft.setValue(1);
 			motorRight.setValue(1);
 		)
-		else if (coords.Y > 0) then
+		else if (coords.Y > 5) then
 		(
 			motorLeft.setValue(-1);
 			motorRight.setValue(-1);
