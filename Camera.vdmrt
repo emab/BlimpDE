@@ -21,8 +21,8 @@ types
 	RealObjects = map ObjectID to ObjectInfo;
 	
 	public ProcessedInfo :: xPixel : nat
-									 yPixel : nat
-									 width : nat;
+									 				yPixel : nat
+									 				width : real;
 	public ProcessedObjects = map ObjectID to ProcessedInfo;
 	
 operations
@@ -43,21 +43,19 @@ operations
   	dcl camX:real:= posX.getValue();
   	dcl camY:real:= posY.getValue();
   	dcl camZ:real:= 20;
-  	dcl camT:real:= posTheta.getValue() mod 2*MATH`pi;
+  	--dcl camT:real:= posTheta.getValue() mod 2*MATH`pi;
+  	dcl camT:real:= 0;
   	
-  	dcl xMax:real:= camZ * MATH`tan((180*xFOV)/(2*MATH`pi));
-  	dcl yMax:real:= camZ * MATH`tan((180*yFOV)/(2*MATH`pi));
+  	dcl xMax:real:= camZ * MATH`tan((MATH`pi*xFOV)/(2*180));
+  	dcl yMax:real:= camZ * MATH`tan((MATH`pi*yFOV)/(2*180));
   	
   	dcl avgXPixelVal:real:= (xResolution)/(2*xMax);
   	dcl avgYPixelVal:real:= (yResolution)/(2*yMax);
   	
   	dcl numOfObjects:nat:= card (dom realObjects);
-  	IO`println("real objects:");
-  	IO`println(numOfObjects);
-  	IO`println(processedObj);
   	for i = 1 to numOfObjects do
   		if isVisible(camX, camY, camZ, camT, realObjects(i).xCoord, realObjects(i).yCoord) then (
-  			processedObj:= {i |-> processObject(i, camX, camY, camZ, camT, xMax, yMax, avgXPixelVal, avgYPixelVal)};
+  			processedObj:= processedObj ++ {i |-> processObject(i, camX, camY, camZ, camT, xMax, yMax, avgXPixelVal, avgYPixelVal)};
   		);
   	return processedObj;
   );
@@ -98,14 +96,14 @@ operations
 			adjY:= objY;
 		);
 		
-		rotatedAdjX:= adjX * MATH`cos((-camT)*(MATH`pi/180)) - adjY * MATH`sin((-camT)*(MATH`pi/180));
-		rotatedAdjY:= adjX * MATH`sin((-camT)*(MATH`pi/180)) - adjY * MATH`cos((-camT)*(MATH`pi/180));
+		rotatedAdjX:= adjX * MATH`cos(-camT) - adjY * MATH`sin(-camT);
+		rotatedAdjY:= adjX * MATH`sin(-camT) - adjY * MATH`cos(-camT);
 		
 		distance:= MATH`sqrt((camX - objX)*(camX - objX) + (camY - objY)*(camY - objY) + (camZ * camZ));
 		objArc:= 2 * MATH`atan(objR / distance);
-		pixelWidth:= floor ((objArc / xFOV) * xResolution);
-		xCentre:= floor ((rotatedAdjX - xMax) * avgXPixelVal);
-		yCentre:= floor ((rotatedAdjY - yMax) * avgYPixelVal);
+		pixelWidth:= (((objArc * 180/MATH`pi) / xFOV) * xResolution);
+		xCentre:= floor ((rotatedAdjX + xMax) * avgXPixelVal);
+		yCentre:= floor ((rotatedAdjY + yMax) * avgYPixelVal);
 			
 		return mk_ProcessedInfo(xCentre, yCentre, pixelWidth);
 	);
@@ -113,8 +111,8 @@ operations
   private isVisible : real * real * real * real * real * real ==> bool
   isVisible(camX, camY, camZ, camT, objX, objY) ==
   (
-    dcl xMax:real:= camZ * MATH`tan((180*xFOV)/(2*MATH`pi));
-  	dcl yMax:real:= camZ * MATH`tan((180*yFOV)/(2*MATH`pi));
+    dcl xMax:real:= camZ * MATH`tan((xFOV/2)*(MATH`pi/180));
+  	dcl yMax:real:= camZ * MATH`tan((yFOV/2)*(MATH`pi/180));
   	dcl adjX:real;
 		dcl adjY:real;
 		dcl rotatedAdjX:real;
@@ -138,8 +136,8 @@ operations
 			adjY:= objY;
 		);
 
-		rotatedAdjX:= adjX * MATH`cos((-camT)*(MATH`pi/180)) - adjY * MATH`sin((-camT)*(MATH`pi/180));
-		rotatedAdjY:= adjX * MATH`sin((-camT)*(MATH`pi/180)) - adjY * MATH`cos((-camT)*(MATH`pi/180));
+		rotatedAdjX:= adjX * MATH`cos(-camT) - adjY * MATH`sin(-camT);
+		rotatedAdjY:= adjX * MATH`sin(-camT) - adjY * MATH`cos(-camT);
 		
 		if ((xMax > abs rotatedAdjX) and (yMax > abs rotatedAdjY)) then
 		(
