@@ -15,8 +15,8 @@ types
 											xCoord : real
 											yCoord : real
 											radius : real
-											xPixel : nat
-											yPixel : nat
+											xPixel : int
+											yPixel : int
 											width : real;
 	
 	Objects = seq of CalculateObjects;
@@ -112,9 +112,7 @@ operations
 						p3:= mk_Coord(realObjects(objID).xCoord, realObjects(objID).yCoord, 0);
 						l3:= getDistance(realObjects(objID).radius, processedObjects(objID).width, camera);
 						calc3:= mk_CalculateObjects(objID,realObjects(objID).xCoord, realObjects(objID).yCoord, realObjects(objID).radius, processedObjects(objID).xPixel,processedObjects(objID).yPixel,processedObjects(objID).width);
-					);
-				) else (
-								IO`printf("endofblock count: %s",[count]);
+					);		
 				);
 				count:= count + 1;
 			);
@@ -219,23 +217,21 @@ operations
    	dcl obj2:Coord2:= translate(xCam, yCam, objects(2).xCoord, objects(2).yCoord);   	
    	dcl obj3:Coord2:= translate(xCam, yCam, objects(3).xCoord, objects(3).yCoord);
    	
-   	dcl obj1x:nat:= floor ((obj1.X + xMax) * avgXPixelVal);
-   	dcl obj1y:nat:= floor ((obj1.Y + yMax) * avgYPixelVal);  
-    dcl obj2x:nat:= floor ((obj2.X + xMax) * avgXPixelVal);  
-   	dcl obj2y:nat:= floor ((obj2.Y + yMax) * avgYPixelVal);  
-    dcl obj3x:nat:= floor ((obj3.X + xMax) * avgXPixelVal);  
-  	dcl obj3y:nat:= floor ((obj3.Y + yMax) * avgYPixelVal);     	
+   	dcl obj1x:int:= floor ((obj1.X + xMax) * avgXPixelVal);
+   	dcl obj1y:int:= floor ((obj1.Y + yMax) * avgYPixelVal);  
+    dcl obj2x:int:= floor ((obj2.X + xMax) * avgXPixelVal);  
+   	dcl obj2y:int:= floor ((obj2.Y + yMax) * avgYPixelVal);  
+    dcl obj3x:int:= floor ((obj3.X + xMax) * avgXPixelVal);  
+  	dcl obj3y:int:= floor ((obj3.Y + yMax) * avgYPixelVal);     	
   	
   	dcl calcangle1:real:= angleChange(obj1x, obj1y, objects(1).xPixel, objects(1).yPixel, resX/2, resY/2);
   	dcl calcangle2:real:= angleChange(obj2x, obj2y, objects(2).xPixel, objects(2).yPixel, resX/2, resY/2);
   	dcl calcangle3:real:= angleChange(obj3x, obj3y, objects(3).xPixel, objects(3).yPixel, resX/2, resY/2);
 		
-		IO`printf("ANGLES::::::::::::: %s %s %s",[calcangle1,calcangle2,calcangle3]);
-		
   	return (calcangle1 + calcangle2 + calcangle3)/3;	
  	);
  	
- 	private angleChange : nat * nat * nat * nat * nat * nat ==> real
+ 	private angleChange : int * int * int * int * int * int ==> real
  	angleChange(initial_x, initial_y, new_x, new_y, camX, camY) ==
  	(
  		dcl initial_angle:real:= angle(initial_x, initial_y, camX, camY);

@@ -44,7 +44,7 @@ operations
   	dcl camY:real:= posY.getValue();
   	dcl camZ:real:= 20;
   	--dcl camT:real:= posTheta.getValue() mod 2*MATH`pi;
-  	dcl camT:real:= 60 * 180/MATH`pi;
+  	dcl camT:real:= 0;
   	
   	dcl xMax:real:= camZ * MATH`tan((MATH`pi*xFOV)/(2*180));
   	dcl yMax:real:= camZ * MATH`tan((MATH`pi*yFOV)/(2*180));
