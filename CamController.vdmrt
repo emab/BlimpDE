@@ -238,7 +238,7 @@ operations
  		dcl rotated_angle:real:= angle(new_x, new_y, camX, camY);
  		
  		if (rotated_angle < initial_angle) then
-			rotated_angle:= 360 + rotated_angle;
+			rotated_angle:= 2*MATH`pi + rotated_angle;
 			
 		return abs (rotated_angle - initial_angle);
  	);
@@ -247,21 +247,21 @@ operations
  	angle(x, y, camX, camY) ==
  	(
  		if (x > camX and y > camY) then
-			return (MATH`atan((x-camX)/(y-camY)))*(180/MATH`pi)
+			return MATH`atan((x-camX)/(y-camY))
 		else if (x > camX and y < camY) then
-			return 90 + (MATH`atan((camY-y)/(x-camX)))*(180/MATH`pi)
+			return 0.5*MATH`pi + MATH`atan((camY-y)/(x-camX))
 		else if (x < camX and y > camY) then
-			return 270 + (MATH`atan((camY-y)/(camX-x)))*(180/MATH`pi)
+			return 1.5*MATH`pi + MATH`atan((camY-y)/(camX-x))
 		else if (x < camX and y < camY) then
-			return 180 + (MATH`atan((camX-x)/(camY-y)))*(180/MATH`pi)
+			return MATH`pi + MATH`atan((camX-x)/(camY-y))
 		else if (x = camX and y > camY) then
 			return 0
 		else if (x = camX and y < camY) then
-			return 180
+			return MATH`pi
 		else if (y = camY and x > camX) then
-			return 90
+			return 0.5*MATH`pi
 		else if (y = camY and x < camX) then
-			return 270
+			return 1.5*MATH`pi
 		else
 			return 0
  	);

@@ -4,17 +4,19 @@ instance variables
 	motorLeft: SimpleActuator;
 	motorRight: SimpleActuator;
 	camController: CamController;
-	pid: PID;
+	pPid: PID;
+	tPid: PID;
+	target: Target;
+	step: real:= 0;
 	
 types
 PID :: pGain : real
 			 dGain : real
-			 iGain : real
-			 iMax : real
-			 iMin : real
-			 iState : real
 			 dState : real;
-	
+
+Target :: X : real
+					Y : real;
+					
 operations
 
 	public MovController : SimpleActuator * SimpleActuator * CamController ==> MovController
@@ -23,40 +25,76 @@ operations
 	  motorLeft:= motorL; 
  		motorRight:= motorR;
  		camController:= camCont;
- 		pid:= mk_PID(0.80,82,0,1,1,0,0);
+ 		pPid:= mk_PID(0.8,90,0);
+ 		tPid:= mk_PID(0.6,50,0);
+ 		target:= mk_Target(1,1);
   );
 	
   private control_loop : () ==> ()
 	control_loop() == cycles(0) (
 		dcl pos:CamController`EstimatedPos:= camController.process();
 		dcl coords:CamController`Coord:=pos.Coord;
-		--dcl theta:real:=pos.T;
-		dcl targetY:real:= 1;
-		dcl drive:real;
-	
-		drive:=normalise(updatePID(targetY - coords.Y, coords.Y));
-		motorLeft.setValue(drive);
-		motorRight.setValue(drive);
+		
+		if step = 0 then (
+			dcl driveY:real:=normalise(updatePositionPID(target.Y - coords.Y, coords.Y));
+			motorLeft.setValue(driveY);
+			motorRight.setValue(driveY);
+			
+			if (coords.Y < target.Y + 0.0001 and coords.Y > target.Y - 0.0001) then
+				step:=1;
+		);
+		
+		if step = 1 then (
+			--ROTATE DEPENDING ON THE DESIRED Y COORDINATE
+			dcl targetT:real;
+			dcl driveT:real;
+			if (target.X = 0) then
+				targetT:=0
+			else if (target.X > 0) then
+				targetT:=MATH`pi/2
+			else if (target.X < 0) then
+				targetT:=MATH`pi*1.5;
+			driveT:=normalise(updateDirectionPID(targetT - pos.T, pos.T));
+			motorLeft.setValue(-driveT);
+			motorRight.setValue(driveT);
+			
+			if (pos.T < targetT + 0.0001 and pos.T > targetT - 0.0001) then
+				step:=2;
+		);
+		if step = 2 then (
+			dcl driveX:real:=normalise(updatePositionPID(target.X - coords.X, coords.X));
+			motorLeft.setValue(driveX);
+			motorRight.setValue(driveX);
+			
+			if (coords.X < target.X + 0.0001 and coords.X > target.X - 0.0001) then
+				step:=3;
+		);
   );
   
-  private updatePID : real * real ==> real
-  updatePID(pidError, position) ==
+  private updatePositionPID : real * real ==> real
+  updatePositionPID(pidError, position) ==
   (
-  	dcl pTerm:real:= pidError * pid.pGain;
-  	dcl dTerm:real:= pid.dGain * (position - pid.dState);
-  	dcl iTerm:real;
+  	dcl pTerm:real:= pidError * pPid.pGain;
+  	
+  	dcl dTerm:real:= pPid.dGain * (position - pPid.dState);
+
   	dcl output:real;
-  	pid.iState:= pid.iState + pidError;
-  	if (pid.iState > pid.iMax) then
-  	(
-  		pid.iState:= pid.iMax;
-  	) else if (pid.iState < pid.iMin) then
-  	(
-  		pid.iState:= pid.iMin;
-  	);
-  	iTerm:= pid.iGain * pid.iState;
-		pid.dState:= position;
-		output:= (pTerm + iTerm - dTerm);
+  	
+		pPid.dState:= position;
+		output:= (pTerm - dTerm);
+		return output;
+  );
+  
+  private updateDirectionPID : real * real ==> real
+  updateDirectionPID(pidError, position) ==
+  (
+  	dcl pTerm:real:= pidError * tPid.pGain;
+  	
+  	dcl dTerm:real:= tPid.dGain * (position - tPid.dState);
+
+  	dcl output:real;
+		tPid.dState:= position;
+		output:= (pTerm - dTerm);
 		return output;
   );
   
