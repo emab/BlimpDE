@@ -5,8 +5,6 @@ instance variables
 	motorRight: SimpleActuator;
 	camController: CamController;
 	pid: PID;
-	count: real;
-	lastPos: real;
 	
 types
 PID :: pGain : real
@@ -25,9 +23,7 @@ operations
 	  motorLeft:= motorL; 
  		motorRight:= motorR;
  		camController:= camCont;
- 		pid:= mk_PID(0.80,41,0,1,1,0,0);
-		count:= 0;
-		lastPos:= 0;
+ 		pid:= mk_PID(0.80,82,0,1,1,0,0);
   );
 	
   private control_loop : () ==> ()
@@ -38,22 +34,16 @@ operations
 		dcl targetY:real:= 1;
 		dcl drive:real;
 	
-		--if (count > 5) then
-		--(
-		--	lastPos:= coords.Y;
-		--	count:= 0;
-		--);
 		drive:=normalise(updatePID(targetY - coords.Y, coords.Y));
 		motorLeft.setValue(drive);
 		motorRight.setValue(drive);
-		count:= count + 1;
   );
   
   private updatePID : real * real ==> real
   updatePID(pidError, position) ==
   (
   	dcl pTerm:real:= pidError * pid.pGain;
-  	dcl dTerm:real:= pid.dGain * (position - pid.dState)/0.002;
+  	dcl dTerm:real:= pid.dGain * (position - pid.dState);
   	dcl iTerm:real;
   	dcl output:real;
   	pid.iState:= pid.iState + pidError;
@@ -64,9 +54,8 @@ operations
   	(
   		pid.iState:= pid.iMin;
   	);
-  	IO`printf("------------CURRENT POS: %s           LAST POS: %s",[position,pid.dState]);
   	iTerm:= pid.iGain * pid.iState;
-		pid.dState:= lastPos;
+		pid.dState:= position;
 		output:= (pTerm + iTerm - dTerm);
 		return output;
   );
