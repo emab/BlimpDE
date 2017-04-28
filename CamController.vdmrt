@@ -227,8 +227,9 @@ operations
   	dcl calcangle1:real:= angleChange(obj1x, obj1y, objects(1).xPixel, objects(1).yPixel, resX/2, resY/2);
   	dcl calcangle2:real:= angleChange(obj2x, obj2y, objects(2).xPixel, objects(2).yPixel, resX/2, resY/2);
   	dcl calcangle3:real:= angleChange(obj3x, obj3y, objects(3).xPixel, objects(3).yPixel, resX/2, resY/2);
-		
-  	return (calcangle1 + calcangle2 + calcangle3)/3;	
+  	dcl returnangle:real:= -(abs(2*MATH`pi - ((calcangle1 + calcangle2 + calcangle3)/3)));
+		IO`printf("CALCULATED ANGLES: %s %s %s",[calcangle1,calcangle2,calcangle3]);
+  	return  returnangle;
  	);
  	
  	private angleChange : int * int * int * int * int * int ==> real

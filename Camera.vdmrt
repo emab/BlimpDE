@@ -42,7 +42,7 @@ operations
   	dcl processedObj:ProcessedObjects:= {|->};
   	dcl camX:real:= posX.getValue();
   	dcl camY:real:= posY.getValue();
-  	dcl camZ:real:= 20;
+  	dcl camZ:real:= 5;
   	dcl camT:real:= posTheta.getValue();
   	--dcl camT:real:= MATH`pi;
   	
@@ -53,6 +53,8 @@ operations
   	dcl avgYPixelVal:real:= (yResolution)/(2*yMax);
   	
   	dcl numOfObjects:nat:= card (dom realObjects);
+  	
+  	IO`printf("REAL THETA:::::::::::::::::::::: %s\n",[camT]);
   	for i = 1 to numOfObjects do
   		if isVisible(camX, camY, camZ, camT, realObjects(i).xCoord, realObjects(i).yCoord) then (
   			processedObj:= processedObj ++ {i |-> processObject(i, camX, camY, camZ, camT, xMax, yMax, avgXPixelVal, avgYPixelVal)};
