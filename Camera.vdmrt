@@ -42,7 +42,7 @@ operations
   	dcl processedObj:ProcessedObjects:= {|->};
   	dcl camX:real:= posX.getValue();
   	dcl camY:real:= posY.getValue();
-  	dcl camZ:real:= 5;
+  	dcl camZ:real:= 20;
   	dcl camT:real:= posTheta.getValue();
   	--dcl camT:real:= MATH`pi;
   	

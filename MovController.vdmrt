@@ -7,7 +7,12 @@ instance variables
 	pPid: PID;
 	tPid: PID;
 	target: Target;
-	step: real:= 1;
+	step: real:= 3;
+	countY:nat:= 0;
+	countR:nat:= 0;
+	countX:nat:= 0;
+	
+	
 	
 types
 PID :: pGain : real
@@ -25,9 +30,9 @@ operations
 	  motorLeft:= motorL; 
  		motorRight:= motorR;
  		camController:= camCont;
- 		pPid:= mk_PID(0.8,90,0);
- 		tPid:= mk_PID(0.1,0,0);
- 		target:= mk_Target(1,1);
+		pPid:= mk_PID(0.8,90,0);
+ 		tPid:= mk_PID(0.8,0,0);
+ 		target:= mk_Target(-1,10);
   );
 	
   private control_loop : () ==> ()
@@ -35,41 +40,129 @@ operations
 		dcl pos:CamController`EstimatedPos:= camController.process();
 		dcl coords:CamController`Coord:=pos.Coord;
 		IO`printf("CALCULATED THETA:::::::::::::::::::::: %s\n",[pos.T]);
-		if step = 0 then (
-			dcl driveY:real:=normalise(updatePositionPID(target.Y - coords.Y, coords.Y));
-			motorLeft.setValue(driveY);
-			motorRight.setValue(driveY);
-			if (coords.Y < target.Y + 0.0001 and coords.Y > target.Y - 0.0001) then
-				step:=1;
+		
+		if step = 3 then
+		(
+			dcl targetT:real:=MATH`pi/2;
+			dcl driveT:real:= normalise(updatePositionPID(targetT - pos.T, pos.T));
+			IO`printf("TARGET THETA::::::@@@@@@@@@@:::::::::::::::: %s @@@@@@@@@ CALC POS: %s\n",[targetT,pos.T]);
+			motorLeft.setValue(-driveT);
+			motorRight.setValue(driveT);
 		);
 		
-		if step = 1 then (
-			--ROTATE DEPENDING ON THE DESIRED X COORDINATE
-			dcl targetT:real;
-			dcl driveT:real;
-			if (target.X = 0) then
-				targetT:=0
-			else if (target.X > 0) then
-				targetT:=-MATH`pi/2
-			else if (target.X < 0) then
-				targetT:=MATH`pi/2;
-			driveT:=normalise(updateDirectionPID(targetT - pos.T, pos.T));
-			motorLeft.setValue(driveT);
-			motorRight.setValue(-driveT);
-			IO`printf("TARGET T: %s      POS T: %s",[targetT*(180/MATH`pi),pos.T*(180/MATH`pi)]);
-			if (pos.T < targetT + 0.0001 and pos.T > targetT - 0.0001) then
-				step:=3;
-		);
-		if step = 2 then (
-			dcl driveX:real:=normalise(updatePositionPID(target.X - coords.X, coords.X));
-			motorLeft.setValue(driveX);
-			motorRight.setValue(driveX);
+		if step = 0 then
+		(
+			dcl driveY:real:= normalise(updatePositionPID(target.Y - coords.Y, coords.Y));
+			motorLeft.setValue(driveY);
+			motorRight.setValue(driveY);
 			
-			if (coords.X < target.X + 0.0001 and coords.X > target.X - 0.0001) then
-				step:=3;
+			if (coords.Y < target.Y + 0.001 and coords.Y > target.Y - 0.001) then
+				countY:= countY + 1;
+			if countY >= 20 then
+			(
+				step:= 1;
+				countY:= 0;
+			);
+		);
+		
+		if step = 1 then
+		(
+			dcl rotate:real;
+			dcl driveR:real;
+			
+			if (target.X = 0) then
+				step:= 3
+			else if (target.X < 0) then
+				rotate:=MATH`pi/2
+			else if (target.X > 0) then
+				rotate:=1.5 * MATH`pi;
+				
+			driveR:= normalise(updateDirectionPID(rotate - pos.T, pos.T));
+			motorLeft.setValue(-driveR);
+			motorRight.setValue(driveR);
+			if (pos.T < rotate + 0.001 and pos.T > rotate -0.001) then
+				countR:= countR+1;
+			if countR = 20 then
+			(
+				step:=2;
+				countR:=0;
+			);
+		);
+		
+		if step = 2 then
+		(
+		dcl driveX:real:= normalise(updatePositionPID(target.X - coords.X, coords.X));
+			motorLeft.setValue(-driveX);
+			motorRight.setValue(-driveX);
+			
+			if (coords.X < target.X + 0.001 and coords.X > target.X - 0.001) then
+				countX:= countX + 1;
+			if countX = 10 then
+			(
+				step:= 4;
+				countX:= 0;
+			);
 		);
   );
   
+  private targetAngle : real * real ==> real
+  targetAngle(X, Y) ==
+  (
+  	return MATH`cos(Y/X);
+  );
+  
+  private distance : real * real ==> real
+  distance(X, Y) ==
+  (
+  	dcl a:real:= (X*X + Y*Y);
+  	return MATH`sqrt(a);
+  );
+  
+   	private angle2 : nat * nat * nat * nat ==> real
+ 	angle2(x, y, camX, camY) ==
+ 	(
+ 		if (x > camX and y > camY) then
+			return MATH`atan((x-camX)/(y-camY))
+		else if (x > camX and y < camY) then
+			return 0.5*MATH`pi + MATH`atan((camY-y)/(x-camX))
+		else if (x < camX and y > camY) then
+			return 1.5*MATH`pi + MATH`atan((camY-y)/(camX-x))
+		else if (x < camX and y < camY) then
+			return MATH`pi + MATH`atan((camX-x)/(camY-y))
+		else if (x = camX and y > camY) then
+			return 0
+		else if (x = camX and y < camY) then
+			return MATH`pi
+		else if (y = camY and x > camX) then
+			return 0.5*MATH`pi
+		else if (y = camY and x < camX) then
+			return 1.5*MATH`pi
+		else
+			return 0
+ 	);
+ 	
+ 	private angle : real * real * real * real ==> real
+ 	angle(x, y, camX, camY) ==
+ 	(
+ 		if (x > camX and y > camY) then
+			return 1.5*MATH`pi + abs (MATH`atan((camY-y)/(camX-x)))
+		else if (x > camX and y < camY) then
+			return MATH`pi + abs (MATH`atan((camX-x)/(y-camY)))
+		else if (x < camX and y > camY) then
+			return abs (MATH`atan((x-camX)/(y-camY)))
+		else if (x < camX and y < camY) then
+			return MATH`pi/2 + abs (MATH`atan((camY-y)/(camX-x)))
+		else if (x = camX and y > camY) then
+			return 0
+		else if (x = camX and y < camY) then
+			return MATH`pi
+		else if (y = camY and x > camX) then
+			return 1.5*MATH`pi
+		else if (y = camY and x < camX) then
+			return MATH`pi/2
+		else
+			return 0
+ 	);
   private updatePositionPID : real * real ==> real
   updatePositionPID(pidError, position) ==
   (
