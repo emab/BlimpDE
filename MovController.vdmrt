@@ -31,7 +31,7 @@ operations
  		motorRight:= motorR;
  		camController:= camCont;
 		pPid:= mk_PID(0.8,90,0);
- 		tPid:= mk_PID(0.4,80,0);
+ 		tPid:= mk_PID(0.4,40,0);
  		target:= mk_Target(-1,1.5);
   );
 	
@@ -43,8 +43,8 @@ operations
 		
 		if step = 3 then
 		(
-			dcl targetT:real:=MATH`pi/2;
-			dcl driveT:real:= normalise(updatePositionPID(targetT - pos.T, pos.T));
+			dcl targetT:real:=1;
+			dcl driveT:real:= normalise(updateDirectionPID(targetT - pos.T, pos.T));
 			IO`printf("TARGET THETA::::::@@@@@@@@@@:::::::::::::::: %s @@@@@@@@@ CALC POS: %s\n",[targetT,pos.T]);
 			motorLeft.setValue(-driveT);
 			motorRight.setValue(driveT);
@@ -80,7 +80,7 @@ operations
 			driveR:= normalise(updateDirectionPID(rotate - pos.T, pos.T));
 			motorLeft.setValue(-driveR);
 			motorRight.setValue(driveR);
-			if (pos.T < rotate + 0.001 and pos.T > rotate -0.001) then
+			if (pos.T < rotate + 0.01 and pos.T > rotate -0.01) then
 				countR:= countR+1;
 			if countR = 20 then
 			(

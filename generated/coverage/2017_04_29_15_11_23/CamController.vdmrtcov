@@ -1,0 +1,316 @@
+class CamController
+
+instance variables
+camera: Camera;
+realObjects: RealObjects;
+	
+types
+	ObjectID = nat;
+	ObjectInfo :: xCoord : real
+								yCoord : real
+								radius : real;
+	RealObjects = map ObjectID to ObjectInfo;
+	
+	CalculateObjects :: id : nat
+											xCoord : real
+											yCoord : real
+											radius : real
+											xPixel : int
+											yPixel : int
+											width : real;
+	
+	Objects = seq of CalculateObjects;
+	
+	public Coord :: X : real
+					 Y : real
+					 Z : real;
+					 
+	Length :: a : real
+						b : real
+						c : real;
+					 
+	Coord2 :: X : real
+						Y : real;
+	
+	Lengths :: l1: real
+						 l2: real
+						 l3: real;
+		
+	public EstimatedPos :: Coord : Coord
+											T : real;
+					
+operations
+
+	public CamController : Camera ==> CamController
+	CamController(c) == 
+	(
+  	camera:= c;
+  	realObjects:= readCSV("environment.csv");
+  );
+  
+  public test : () ==> bool
+  test() ==
+  (
+  	if (card (dom realObjects) > 0) then
+  		return true
+  	else
+  		return false;
+  );
+  
+  public test2 : () ==> bool
+  test2() ==
+  (
+  	dcl testObj:Camera`ProcessedObjects:= camera.processImage();
+  	if (card (dom testObj) = 0) then
+  		return true
+  	else
+  		return false;
+  );
+   
+  public process : () ==> EstimatedPos
+  process() ==
+  (
+  	dcl processedObjects:Camera`ProcessedObjects:= camera.processImage();
+  	dcl calcObjects:Objects;
+  	if (card(dom  processedObjects) < 3) then
+  	(
+  		return mk_EstimatedPos(mk_Coord(999,999,999), 9999)
+  	) else
+  	(
+  		dcl count:nat:= 1;
+  		dcl p1:Coord;
+			dcl p2:Coord;
+			dcl p3:Coord;
+			dcl l1:real;
+			dcl l2:real;
+			dcl l3:real;
+			dcl lengths:Lengths;
+			dcl coords:Coord;
+			dcl angle:real;
+			dcl calc1:CalculateObjects;
+			dcl calc2:CalculateObjects;
+			dcl calc3:CalculateObjects;
+			
+		for all objID in set dom processedObjects do
+		(
+			if (count <=3) then
+			(
+					if (count = 1) then
+					(
+						p1:= mk_Coord(realObjects(objID).xCoord, realObjects(objID).yCoord, 0);
+						l1:= getDistance(realObjects(objID).radius, processedObjects(objID).width, camera);
+						calc1:= mk_CalculateObjects(objID,realObjects(objID).xCoord, realObjects(objID).yCoord, realObjects(objID).radius, processedObjects(objID).xPixel,processedObjects(objID).yPixel,processedObjects(objID).width);
+					);
+					if (count = 2) then
+					(
+						p2:= mk_Coord(realObjects(objID).xCoord, realObjects(objID).yCoord, 0);
+						l2:= getDistance(realObjects(objID).radius, processedObjects(objID).width, camera);
+						calc2:= mk_CalculateObjects(objID,realObjects(objID).xCoord, realObjects(objID).yCoord, realObjects(objID).radius, processedObjects(objID).xPixel,processedObjects(objID).yPixel,processedObjects(objID).width);
+					);
+					if (count = 3) then
+					(
+						p3:= mk_Coord(realObjects(objID).xCoord, realObjects(objID).yCoord, 0);
+						l3:= getDistance(realObjects(objID).radius, processedObjects(objID).width, camera);
+						calc3:= mk_CalculateObjects(objID,realObjects(objID).xCoord, realObjects(objID).yCoord, realObjects(objID).radius, processedObjects(objID).xPixel,processedObjects(objID).yPixel,processedObjects(objID).width);
+					);		
+				);
+				count:= count + 1;
+			);
+			lengths:= mk_Lengths(l1,l2,l3);
+			
+			coords:= trilaterate(p1,p2,p3,lengths);
+			calcObjects:=[calc1,calc2,calc3];
+			angle:= calcAngle(calcObjects, camera, coords);
+			
+			return mk_EstimatedPos(coords, angle);
+  	);
+  ); 
+  
+  private getDistance : real * real * Camera ==> real
+  getDistance(objR, pixelWidth, cam) ==
+  (	
+  	dcl ratio:real:= (cam.getxFOV() * pixelWidth) /cam.getxResolution();
+  	dcl dist:real:= objR / MATH`tan((ratio * (MATH`pi/180))/2);
+	 	return dist;
+  );
+   
+  private trilaterate : Coord * Coord * Coord * Lengths ==> Coord
+  trilaterate(p1, p2, p3, length) ==
+  (
+		dcl x1:real:= p1.X;
+		dcl y1:real:= p1.Y;
+		dcl z1:real:= p1.Z;
+		
+		dcl x2:real:= p2.X;
+		dcl y2:real:= p2.Y;
+		dcl z2:real:= p2.Z;
+	
+		dcl x3:real:= p3.X;
+		dcl y3:real:= p3.Y;
+		dcl z3:real:= p3.Z;
+		
+		dcl L1:real:= length.l1;
+		dcl L2:real:= length.l2;
+		dcl L3:real:= length.l3;
+		
+		dcl LB1:real:= MATH`sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
+		dcl LB2:real:= MATH`sqrt((x3 - x2) * (x3 - x2) + (y3 - y2) * (y3 - y2) + (z3 - z2) * (z3 - z2));
+		dcl LB3:real:= MATH`sqrt((x1 - x3) * (x1 - x3) + (y1 - y3) * (y1 - y3) + (z1 - z3) * (z1 - z3));
+		
+		dcl X:real:= (L1*L1  - L2*L2  + LB1*LB1)/(2*LB1 );
+		dcl C1:real:= MATH`sqrt(L1*L1 - X*X);
+		dcl XB:real:= (LB3*LB3 - LB2*LB2 + LB1*LB1 )/(2*LB1);
+		dcl CB:real:= MATH`sqrt(LB3*LB3 - XB* XB );
+		dcl D1:real:= MATH`sqrt(C1*C1+(XB - X)*(XB - X));
+		dcl Y:real:= (D1*D1 - L3*L3  + CB*CB  )/(2*CB );
+		dcl Za:real:= (C1*C1)-(Y*Y);
+		dcl Z:real:= MATH`sqrt(Za);
+		
+		dcl Xx:real:= (x2-x1);
+		dcl Xy:real:= (y2-y1);
+		dcl Xz:real:= (z2-z1);
+		dcl Xl:real:= MATH`sqrt(Xx*Xx+Xy*Xy+Xz*Xz);
+		
+		dcl t:real:= -((x1-x3)*(x2-x1)+(y1-y3)*(y2-y1)+(z1-z3)*(z2-z1))/(LB1*LB1);
+		dcl Yx:real:= (x1+(x2-x1)*t-x3);
+	  dcl Yy:real:= (y1+(y2-y1)*t-y3);
+	  dcl Yz:real:= (z1+(z2-z1)*t-z3);
+	  dcl Yl:real:= MATH`sqrt(Yx*Yx+Yy*Yy+Yz*Yz);  
+	    
+	  dcl Zx:real;
+	  dcl Zy:real;
+	  dcl Zz:real;
+	    
+		Xx:= Xx / Xl;
+		Xy:= Xy / Xl;
+		Xz:= Xz / Xl;
+		
+		Yx:= -(Yx/Yl);
+		Yy:= -(Yy/Yl);
+		Yz:= -(Yz/Yl);
+		
+		Zx:= (Xy * Yz - Xz * Yy);
+		Zy:= (Xz * Yx - Xx * Yz);
+		Zz:= (Xx * Yy - Xy * Yx); 
+    
+    return mk_Coord((x1 + X * Xx + Y * Yx + Z * Zx),(y1 + X * Xy + Y * Yy + Z * Zy),abs (z1 + X * Xz + Y * Yz + Z * Zz));
+	);
+   
+  private calcAngle : Objects * Camera * Coord ==> real
+  calcAngle(objects, cam, coords) ==
+  (
+		dcl resX:real:= cam.getxResolution();
+		dcl resY:real:= cam.getyResolution();
+		dcl xFOV:real:= cam.getxFOV();
+		dcl yFOV:real:= cam.getyFOV();
+		dcl xCam:real:= coords.X;
+		dcl yCam:real:= coords.Y;
+		dcl zCam:real:= coords.Z;
+		
+		dcl xMax:real:= zCam * MATH`tan((xFOV/2)*(MATH`pi/180));
+		dcl yMax:real:= zCam * MATH`tan((yFOV/2)*(MATH`pi/180));  	
+		
+		dcl avgXPixelVal:real:= resX/(2*xMax);
+		dcl avgYPixelVal:real:= resY/(2*yMax);
+   	
+   	dcl obj1:Coord2:= translate(xCam, yCam, objects(1).xCoord, objects(1).yCoord);
+   	dcl obj2:Coord2:= translate(xCam, yCam, objects(2).xCoord, objects(2).yCoord);   	
+   	dcl obj3:Coord2:= translate(xCam, yCam, objects(3).xCoord, objects(3).yCoord);
+   	
+   	dcl obj1x:int:= floor ((obj1.X + xMax) * avgXPixelVal);
+   	dcl obj1y:int:= floor ((obj1.Y + yMax) * avgYPixelVal);  
+    dcl obj2x:int:= floor ((obj2.X + xMax) * avgXPixelVal);  
+   	dcl obj2y:int:= floor ((obj2.Y + yMax) * avgYPixelVal);  
+    dcl obj3x:int:= floor ((obj3.X + xMax) * avgXPixelVal);  
+  	dcl obj3y:int:= floor ((obj3.Y + yMax) * avgYPixelVal);     	
+  	
+  	dcl calcangle1:real:= angleChange(obj1x, obj1y, objects(1).xPixel, objects(1).yPixel, resX/2, resY/2);
+  	dcl calcangle2:real:= angleChange(obj2x, obj2y, objects(2).xPixel, objects(2).yPixel, resX/2, resY/2);
+  	dcl calcangle3:real:= angleChange(obj3x, obj3y, objects(3).xPixel, objects(3).yPixel, resX/2, resY/2);
+  	dcl returnangle:real:= (calcangle1 + calcangle2 + calcangle3)/3;
+  	IO`printf("OBJECT 1 INFORMATION ================== nonrotated X: %s nonrotated Y: %s rotated X: %s rotated Y: %s",[obj1x,obj1y,objects(1).xPixel, objects(1).yPixel]);
+  	IO`printf("OBJECT 2 INFORMATION ================== nonrotated X: %s nonrotated Y: %s rotated X: %s rotated Y: %s",[obj2x,obj2y,objects(2).xPixel, objects(2).yPixel]);
+  	IO`printf("OBJECT 3 INFORMATION ================== nonrotated X: %s nonrotated Y: %s rotated X: %s rotated Y: %s",[obj3x,obj3y,objects(3).xPixel, objects(3).yPixel]);
+		IO`printf("CALCULATED ANGLES: %s %s %s",[calcangle1,calcangle2,calcangle3]);
+  	return  returnangle * (MATH`pi/180);
+ 	);
+ 	
+ 	private angleChange : int * int * int * int * int * int ==> real
+ 	angleChange(initial_x, initial_y, new_x, new_y, camX, camY) ==
+ 	(
+ 		dcl initial_angle:real:= angle(initial_x, initial_y, camX, camY);
+ 		dcl rotated_angle:real:= angle(new_x, new_y, camX, camY);
+ 		
+		return rotated_angle - initial_angle;
+			
+ 	);
+ 	
+  private angle : nat * nat * nat * nat ==> real
+ 	angle(x, y, camX, camY) ==
+ 	(
+ 		if (x > camX and y > camY) then
+			return MATH`atan((x-camX)/(y-camY)) * (180/MATH`pi)
+		else if (x > camX and y < camY) then
+			return 90 + (MATH`atan((camY-y)/(x-camX)) * (180/MATH`pi))
+		else if (x < camX and y > camY) then
+			return 270 + (MATH`atan((camY-y)/(camX-x)) * (180/MATH`pi))
+		else if (x < camX and y < camY) then
+			return 180 + (MATH`atan((camX-x)/(camY-y)) * (180/MATH`pi))
+		else if (x = camX and y > camY) then
+			return 0
+		else if (x = camX and y < camY) then
+			return 180
+		else if (y = camY and x > camX) then
+			return 90
+		else if (y = camY and x < camX) then
+			return 270
+		else 
+			return 0;
+ 	);
+	 	 	  
+  private translate : real * real * real * real ==> Coord2
+  translate(xCam, yCam, x, y) ==
+  (
+	 	dcl adjX:real;
+	 	dcl adjY:real;
+	 	dcl translated:Coord2;
+   	
+	 	if ((xCam > 0 and yCam > 0) or (xCam > 0 and yCam < 0) or (xCam > 0 and yCam = 0) or (xCam = 0 and yCam > 0)) then
+			(
+				adjX:= x - xCam;
+				adjY:= y - yCam;
+	 		) else if ((xCam < 0 and yCam < 0) or (xCam = 0 and yCam < 0)) then
+	 		(
+				adjX:= x - xCam;
+				adjY:= y + yCam;	
+	  	) else if (xCam < 0 and yCam >= 0) then
+	  	(
+	  		adjX:= x + xCam;
+				adjY:= y + yCam;
+			) else if (xCam = 0 and yCam = 0) then
+			(
+				adjX:= x;
+				adjY:= y;
+			);
+		
+		translated:= mk_Coord2(adjX, adjY);
+		
+ 		return translated;
+  );
+
+	private readCSV : seq1 of char ==> RealObjects
+  readCSV(file) ==
+  (
+  let mk_(ok, lines) = CSV`flinecount(file)
+  in
+  	if ok then (
+  		dcl objects : map ObjectID to ObjectInfo := {|->};
+  		for i = 1 to lines do
+  			let mk_(ok, [objectid, xcoord, ycoord, radius]) = CSV`freadval[seq of real](file,i)
+  			in objects(objectid) := mk_ObjectInfo(xcoord, ycoord, radius);
+  			return objects;
+  			)
+  			else error;
+  ); 
+		 
+end CamController

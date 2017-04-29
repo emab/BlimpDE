@@ -42,7 +42,7 @@ operations
   	dcl processedObj:ProcessedObjects:= {|->};
   	dcl camX:real:= posX.getValue();
   	dcl camY:real:= posY.getValue();
-  	dcl camZ:real:= 15;
+  	dcl camZ:real:= 17;
   	dcl camT:real:= posTheta.getValue();
   	--dcl camT:real:= MATH`pi;
   	
@@ -100,10 +100,11 @@ operations
 		
 		rotatedAdjX:= adjX * MATH`cos(-camT) - adjY * MATH`sin(-camT);
 		rotatedAdjY:= adjX * MATH`sin(-camT) + adjY * MATH`cos(-camT);
-		
+		IO`printf("XMAX AND YMAX: %s  ------ %s",[xMax,yMax]);
 		distance:= MATH`sqrt((camX - objX)*(camX - objX) + (camY - objY)*(camY - objY) + (camZ * camZ));
 		objArc:= 2 * (MATH`atan(objR / distance)) * (180/MATH`pi);
 		pixelWidth:= (objArc  / xFOV) * xResolution;
+		IO`printf("CHECK THESE VALS rotatedadjX: %s     rotatedaY: %s      avgPval: %s",[rotatedAdjX,rotatedAdjY, avgXPixelVal]);
 		xCentre:= floor ((rotatedAdjX + xMax) * avgXPixelVal);
 		yCentre:= floor ((rotatedAdjY + yMax) * avgYPixelVal);
 		
@@ -139,7 +140,7 @@ operations
 		);
 
 		rotatedAdjX:= adjX * MATH`cos(-camT) - adjY * MATH`sin(-camT);
-		rotatedAdjY:= adjX * MATH`sin(-camT) - adjY * MATH`cos(-camT);
+		rotatedAdjY:= adjX * MATH`sin(-camT) + adjY * MATH`cos(-camT);
 		
 		if ((xMax > abs rotatedAdjX) and (yMax > abs rotatedAdjY)) then
 		(
