@@ -228,6 +228,9 @@ operations
   	dcl calcangle2:real:= angleChange(obj2x, obj2y, objects(2).xPixel, objects(2).yPixel, resX/2, resY/2);
   	dcl calcangle3:real:= angleChange(obj3x, obj3y, objects(3).xPixel, objects(3).yPixel, resX/2, resY/2);
   	dcl returnangle:real:= (calcangle1 + calcangle2 + calcangle3)/3;
+  	IO`printf("OBJECT 1 INFORMATION ================== nonrotated X: %s nonrotated Y: %s rotated X: %s rotated Y: %s",[obj1x,obj1y,objects(1).xPixel, objects(1).yPixel]);
+  	IO`printf("OBJECT 2 INFORMATION ================== nonrotated X: %s nonrotated Y: %s rotated X: %s rotated Y: %s",[obj2x,obj2y,objects(2).xPixel, objects(2).yPixel]);
+  	IO`printf("OBJECT 3 INFORMATION ================== nonrotated X: %s nonrotated Y: %s rotated X: %s rotated Y: %s",[obj3x,obj3y,objects(3).xPixel, objects(3).yPixel]);
 		IO`printf("CALCULATED ANGLES: %s %s %s",[calcangle1,calcangle2,calcangle3]);
   	return  returnangle;
  	);
@@ -238,39 +241,29 @@ operations
  		dcl initial_angle:real:= angle(initial_x, initial_y, camX, camY);
  		dcl rotated_angle:real:= angle(new_x, new_y, camX, camY);
  		
- 		if (rotated_angle < initial_angle and initial_x < camX) then
-			return initial_angle - rotated_angle
-		else if (initial_angle > rotated_angle and initial_x < camX) then
-			return -(rotated_angle - initial_angle)
+		return rotated_angle - initial_angle;
 			
-		else if (rotated_angle > initial_angle and initial_x > camX) then
-			return initial_angle - rotated_angle
-		else if (initial_angle < rotated_angle and initial_x > camX) then
-			return -(rotated_angle - initial_angle)
-			
-		else
-			return 0;
  	);
  	
- 	private angle : nat * nat * nat * nat ==> real
+  private angle : nat * nat * nat * nat ==> real
  	angle(x, y, camX, camY) ==
  	(
  		if (x > camX and y > camY) then
-			return 1.5*MATH`pi + MATH`atan((y-camY)/(x-camX))
-		else if (x > camX and y < camY) then
-			return MATH`pi + MATH`atan((y-camY)/(x-camX))
-		else if (x < camX and y > camY) then
 			return MATH`atan((x-camX)/(y-camY))
+		else if (x > camX and y < camY) then
+			return 0.5*MATH`pi + MATH`atan((camY-y)/(x-camX))
+		else if (x < camX and y > camY) then
+			return 1.5*MATH`pi + MATH`atan((camY-y)/(camX-x))
 		else if (x < camX and y < camY) then
-			return MATH`pi/2 + MATH`pi + MATH`atan((camX-x)/(camY-y))
+			return MATH`pi + MATH`atan((camX-x)/(camY-y))
 		else if (x = camX and y > camY) then
 			return 0
 		else if (x = camX and y < camY) then
 			return MATH`pi
 		else if (y = camY and x > camX) then
-			return 1.5*MATH`pi
-		else if (y = camY and x < camX) then
 			return 0.5*MATH`pi
+		else if (y = camY and x < camX) then
+			return 1.5*MATH`pi
 		else
 			return 0
  	);

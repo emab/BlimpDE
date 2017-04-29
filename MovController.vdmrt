@@ -7,7 +7,7 @@ instance variables
 	pPid: PID;
 	tPid: PID;
 	target: Target;
-	step: real:= 3;
+	step: real:= 0;
 	countY:nat:= 0;
 	countR:nat:= 0;
 	countX:nat:= 0;
@@ -31,8 +31,8 @@ operations
  		motorRight:= motorR;
  		camController:= camCont;
 		pPid:= mk_PID(0.8,90,0);
- 		tPid:= mk_PID(0.8,0,0);
- 		target:= mk_Target(-1,10);
+ 		tPid:= mk_PID(0.4,80,0);
+ 		target:= mk_Target(-1,1.5);
   );
 	
   private control_loop : () ==> ()
