@@ -103,8 +103,12 @@ operations
 		IO`printf("XMAX AND YMAX: %s  ------ %s",[xMax,yMax]);
 		distance:= MATH`sqrt((camX - objX)*(camX - objX) + (camY - objY)*(camY - objY) + (camZ * camZ));
 		objArc:= 2 * (MATH`atan(objR / distance)) * (180/MATH`pi);
+<<<<<<< Updated upstream
 		pixelWidth:= (objArc  / xFOV) * xResolution;
 		IO`printf("CHECK THESE VALS rotatedadjX: %s     rotatedaY: %s      avgPval: %s",[rotatedAdjX,rotatedAdjY, avgXPixelVal]);
+=======
+		pixelWidth:= roundUp((objArc  / xFOV) * xResolution);
+>>>>>>> Stashed changes
 		xCentre:= floor ((rotatedAdjX + xMax) * avgXPixelVal);
 		yCentre:= floor ((rotatedAdjY + yMax) * avgYPixelVal);
 		
@@ -149,6 +153,12 @@ operations
 		( 
 			return false
 		);
+  );
+  
+  private roundUp : real ==> real
+  roundUp(x) ==
+  (
+  	return (floor x) + 1;
   );
   
   private readCSV : seq1 of char ==> RealObjects
